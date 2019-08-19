@@ -66,6 +66,8 @@ add_users() {
         chmod 750 "$FTP_DIRECTORY/$username"
       else
         useradd -d "$ROOT_FOLDER" -s /usr/sbin/nologin $username
+        usermod -G ftpaccess $username
+        chown root:ftpaccess "$ROOT_FOLDER"
         chmod 750 "$ROOT_FOLDER"
       fi
       
