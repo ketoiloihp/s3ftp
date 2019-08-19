@@ -23,7 +23,6 @@ for u in $USERS; do
     useradd -d "$FTP_DIRECTORY/$username" -s /usr/sbin/nologin $username
   else
     useradd -d "$ROOT_FOLDER" -s /usr/sbin/nologin $username
-    echo "local_root=$ROOT_FOLDER" >> /etc/vsftpd_user_conf/$username
   fi
   usermod -G ftpaccess $username
 

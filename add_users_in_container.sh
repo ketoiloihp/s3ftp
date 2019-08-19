@@ -66,7 +66,6 @@ add_users() {
         chmod 750 "$FTP_DIRECTORY/$username"
       else
         useradd -d "$ROOT_FOLDER" -s /usr/sbin/nologin $username
-        echo "local_root=$ROOT_FOLDER" >> /etc/vsftpd_user_conf/$username
         chmod 750 "$ROOT_FOLDER"
       fi
       
