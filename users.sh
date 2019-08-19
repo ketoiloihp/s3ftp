@@ -42,16 +42,28 @@ for u in $USERS; do
     echo "Creating '$username' directory..."
     
     # Root must own all directories leading up to and including users home directory
-    mkdir -p "$FTP_DIRECTORY/$username"
-    chown root:ftpaccess "$FTP_DIRECTORY/$username"
-    chmod 750 "$FTP_DIRECTORY/$username"
-    
-    # Need files sub-directory for SFTP chroot
-    for subfolder in $FTP_USER_SUBFOLERS; do
-      mkdir -p "$FTP_DIRECTORY/$username/$subfolder"
-      chown $username:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
-      chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
-    done
+    if [ -z $ROOT_FOLDER ]; then
+      mkdir -p "$FTP_DIRECTORY/$username"
+      chown root:ftpaccess "$FTP_DIRECTORY/$username"
+      chmod 750 "$FTP_DIRECTORY/$username"
+
+      # Need files sub-directory for SFTP chroot
+      for subfolder in $FTP_USER_SUBFOLERS; do
+        mkdir -p "$FTP_DIRECTORY/$username/$subfolder"
+        chown $username:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
+        chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
+      done
+    else
+      usermod --home $ROOT_FOLDER
+      chown root:ftpaccess "$ROOT_FOLDER"
+      chmod 750 "$ROOT_FOLDER"
+
+      # Need files sub-directory for SFTP chroot
+      for subfolder in $FTP_USER_SUBFOLERS; do
+        mkdir -p "$ROOT_FOLDER/$subfolder"
+        chown $username:ftpaccess "$ROOT_FOLDER/$subfolder"
+        chmod 750 "$ROOT_FOLDER/$subfolder"
+      done
+    fi
   fi
-  
 done
