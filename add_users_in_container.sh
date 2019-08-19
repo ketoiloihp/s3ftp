@@ -57,12 +57,20 @@ add_users() {
     # If user account doesn't exist create it 
     # As well as their home directory 
   if ! getent passwd "$username" >/dev/null 2>&1; then
-      useradd -d "$FTP_DIRECTORY/$username" -s /usr/sbin/nologin $username
-      usermod -G ftpaccess $username
- 
-      mkdir -p "$FTP_DIRECTORY/$username"
-      chown root:ftpaccess "$FTP_DIRECTORY/$username"
-      chmod 750 "$FTP_DIRECTORY/$username"
+      if [ -z $ROOT_FOLDER ]; then
+        useradd -d "$FTP_DIRECTORY/$username" -s /usr/sbin/nologin $username
+        usermod -G ftpaccess $username
+  
+        mkdir -p "$FTP_DIRECTORY/$username"
+        chown root:ftpaccess "$FTP_DIRECTORY/$username"
+        chmod 750 "$FTP_DIRECTORY/$username"
+      else
+        useradd -d "$ROOT_FOLDER" -s /usr/sbin/nologin $username
+        echo "local_root=$ROOT_FOLDER" >> /etc/vsftpd_user_conf/$username
+        chmod 750 "$ROOT_FOLDER"
+      fi
+      
+
     fi
 
     # create folder follow the structure
