@@ -1,8 +1,10 @@
 #!/bin/bash
 
-FTP_USER_SUBFOLER=${USER_SUBFOLER:-"files"}
 FTP_SUBFOLER_NAME=${FTP_SUBFOLER:-"ftp-users"}
 IAM_ROLE=${IAM_ROLE:-"auto"}
+if [ ! -z $ROOT_FOLDER ]; then
+  echo "secure_chroot_dir=$ROOT_FOLDER" >> /etc/vsftpd.conf
+fi
 
 # Check first if the required FTP_BUCKET variable was provided, if not, abort.
 if [ -z $FTP_BUCKET ]; then

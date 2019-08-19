@@ -1,7 +1,10 @@
 #!/bin/bash
 # This script will update the env.list file (file containing USERS environrment variable) and add the new users if there are any.
 # Will check for new users at a given time interval (change sleep duration on line 33)
-FTP_USER_SUBFOLER=${USER_SUBFOLER:-"files"}
+FTP_USER_SUBFOLERS=${USER_SUBFOLERS:-"files"}
+FTP_USER_SUBFOLERS_RW=${USER_SUBFOLERS_RW:-""}
+FTP_USER_SUBFOLERS_RW=${USER_SUBFOLERS_RW:-$FTP_USER_SUBFOLERS}
+FTP_USER_SUBFOLERS_R=${USER_SUBFOLERS_R:-""}
 FTP_SUBFOLER_NAME=${FTP_SUBFOLER:-"ftp-users"}
 FTP_DIRECTORY="/home/aws/s3bucket/${FTP_SUBFOLER_NAME}"
 
@@ -28,33 +31,87 @@ add_users() {
       # Permissions when uploaded directly through S3 Web client were set as:
       # 000 root:root
       # This would not allow ftp users to read the files
-      
-      # Search for files and directories not owned correctly
-      find "$FTP_DIRECTORY"/"$username"/"$FTP_USER_SUBFOLER"/* \( \! -user "$username" \! -group "$username" \) -print0 | xargs -0 chown "$username:$username"
+      for subfolder in $FTP_USER_SUBFOLERS; do
+        # Search for files and directories not owned correctly
+        if [ ! -z $ROOT_FOLDER ]; then
+          find "$ROOT_FOLDER"/"$subfolder"/* \( \! -user "$username" \! -group "$username" \) -print0 | xargs -0 chown "$username:$username"
 
-      # Search for files with incorrect permissions
-      find "$FTP_DIRECTORY"/"$username"/"$FTP_USER_SUBFOLER"/* -type f \! -perm "$FILE_PERMISSIONS" -print0 | xargs -0 chmod "$FILE_PERMISSIONS"
+          # Search for files with incorrect permissions
+          find "$ROOT_FOLDER"/"$subfolder"/* -type f \! -perm "$FILE_PERMISSIONS" -print0 | xargs -0 chmod "$FILE_PERMISSIONS"
 
-      # Search for directories with incorrect permissions
-      find "$FTP_DIRECTORY"/"$username"/$FTP_USER_SUBFOLER/* -type d \! -perm "$DIRECTORY_PERMISSIONS" -print0 | xargs -0 chmod "$DIRECTORY_PERMISSIONS"
+          # Search for directories with incorrect permissions
+          find "$ROOT_FOLDER"/$subfolder/* -type d \! -perm "$DIRECTORY_PERMISSIONS" -print0 | xargs -0 chmod "$DIRECTORY_PERMISSIONS"
+        else
+          find "$FTP_DIRECTORY"/"$username"/"$subfolder"/* \( \! -user "$username" \! -group "$username" \) -print0 | xargs -0 chown "$username:$username"
+
+          # Search for files with incorrect permissions
+          find "$FTP_DIRECTORY"/"$username"/"$subfolder"/* -type f \! -perm "$FILE_PERMISSIONS" -print0 | xargs -0 chmod "$FILE_PERMISSIONS"
+
+          # Search for directories with incorrect permissions
+          find "$FTP_DIRECTORY"/"$username"/$subfolder/* -type d \! -perm "$DIRECTORY_PERMISSIONS" -print0 | xargs -0 chmod "$DIRECTORY_PERMISSIONS"
+        fi
+      done
 
     fi
 
     # If user account doesn't exist create it 
     # As well as their home directory 
-    if ! getent passwd "$username" >/dev/null 2>&1; then
-       useradd -d "$FTP_DIRECTORY/$username" -s /usr/sbin/nologin $username
-       usermod -G ftpaccess $username
+  if ! getent passwd "$username" >/dev/null 2>&1; then
+      if [ -z $ROOT_FOLDER ]; then
+        useradd -d "$FTP_DIRECTORY/$username" -s /usr/sbin/nologin $username
+        usermod -G ftpaccess $username
+  
+        mkdir -p "$FTP_DIRECTORY/$username"
+        chown root:ftpaccess "$FTP_DIRECTORY/$username"
+        chmod 750 "$FTP_DIRECTORY/$username"
+      else
+        useradd -d "$ROOT_FOLDER" -s /usr/sbin/nologin $username
+        usermod -G ftpaccess $username
+        chown root:ftpaccess "$ROOT_FOLDER"
+        chmod 750 "$ROOT_FOLDER"
+      fi
+      
 
-       mkdir -p "$FTP_DIRECTORY/$username"
-       chown root:ftpaccess "$FTP_DIRECTORY/$username"
-       chmod 750 "$FTP_DIRECTORY/$username"
+    fi
 
-       mkdir -p "$FTP_DIRECTORY/$username/$FTP_USER_SUBFOLER"
-       chown $username:ftpaccess "$FTP_DIRECTORY/$username/$FTP_USER_SUBFOLER"
-       chmod 750 "$FTP_DIRECTORY/$username/$FTP_USER_SUBFOLER"
-     fi
-   done
+    # create folder follow the structure
+    for subfolder in $FTP_USER_SUBFOLERS; do
+      if [ ! -z $ROOT_FOLDER ]; then
+        mkdir -p $ROOT_FOLDER/$subfolder
+        chown $username:ftpaccess "$ROOT_FOLDER/$subfolder"
+        chmod 770 "$ROOT_FOLDER/$subfolder"
+      else
+        mkdir -p $FTP_DIRECTORY/$username/$subfolder
+        chown $username:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
+        chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
+      fi
+    done
+
+    #enable write for some folder
+    for subfolder in $FTP_USER_SUBFOLERS_RW; do
+      if [ ! -z $ROOT_FOLDER ]; then
+        mkdir -p $ROOT_FOLDER/$subfolder
+        chown $username:ftpaccess "$ROOT_FOLDER/$subfolder"
+        chmod 770 "$ROOT_FOLDER/$subfolder"
+      else
+        mkdir -p $FTP_DIRECTORY/$username/$subfolder
+        chown $username:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
+        chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
+      fi
+    done
+
+    for subfolder in $FTP_USER_SUBFOLERS_R; do
+      if [ ! -z $ROOT_FOLDER ]; then
+        mkdir -p $ROOT_FOLDER/$subfolder
+        chown root:ftpaccess "$ROOT_FOLDER/$subfolder"
+        chmod 750 "$ROOT_FOLDER/$subfolder"
+      else
+        mkdir -p $FTP_DIRECTORY/$username/$subfolder
+        chown root:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
+        chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
+      fi
+    done
+  done
 }
 
  while true; do
