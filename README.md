@@ -3,6 +3,7 @@
 An ftp/sftp server using s3fs to mount an external s3 bucket as ftp/sftp storage.
 
 More info [here](http://cloudacademy.com/blog/s3-ftp-server/).
+
 Ref: [https://github.com/Factual/open-dockerfiles](https://github.com/Factual/open-dockerfiles)
 
 ## Usage
