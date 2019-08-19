@@ -24,7 +24,6 @@ for u in $USERS; do
   else
     useradd -d "$ROOT_FOLDER" -s /usr/sbin/nologin $username
   fi
-  useradd -d "$FTP_DIRECTORY/$username" -s /usr/sbin/nologin $username
   usermod -G ftpaccess $username
 
   # set the users password
