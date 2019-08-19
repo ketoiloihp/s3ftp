@@ -28,7 +28,7 @@ for u in $USERS; do
   if [ -z "$username" ] || [ -z "$passwd" ]; then
     echo "Invalid username:password combination '$u': please fix to create '$username'"
     continue
-  elif [ -d "$FTP_DIRECTORY/$username" ]; then
+  elif [[ -d "$FTP_DIRECTORY/$username"  && -z $ROOT_FOLDER ]]; then
     echo "Skipping creation of '$username' directory: already exists"
 
     # Directory exists but permissions for it have to be setup anyway.
@@ -57,6 +57,7 @@ for u in $USERS; do
       usermod --home $ROOT_FOLDER $username
       chown root:ftpaccess "$ROOT_FOLDER"
       chmod 750 "$ROOT_FOLDER"
+      echo "local_root=$ROOT_FOLDER" >> /etc/vsftpd_user_conf/$username
 
       # Need files sub-directory for SFTP chroot
       for subfolder in $FTP_USER_SUBFOLERS; do
