@@ -1,5 +1,6 @@
 #!/bin/bash
 
+FTP_USER_SUBFOLERS=${USER_SUBFOLER:-"files"}
 FTP_SUBFOLER_NAME=${FTP_SUBFOLER:-"ftp-users"}
 FTP_DIRECTORY="/home/aws/s3bucket/${FTP_SUBFOLER_NAME}"
 
@@ -33,8 +34,10 @@ for u in $USERS; do
     # Directory exists but permissions for it have to be setup anyway.
     chown root:ftpaccess "$FTP_DIRECTORY/$username"
     chmod 750 "$FTP_DIRECTORY/$username"
-    chown $username:ftpaccess "$FTP_DIRECTORY/$username/$FTP_USER_SUBFOLER"
-    chmod 750 "$FTP_DIRECTORY/$username/$FTP_USER_SUBFOLER"
+    for subfolder in $FTP_USER_SUBFOLERS; do
+      chown $username:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
+      chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
+    done
   else
     echo "Creating '$username' directory..."
     
@@ -44,9 +47,11 @@ for u in $USERS; do
     chmod 750 "$FTP_DIRECTORY/$username"
     
     # Need files sub-directory for SFTP chroot
-    mkdir -p "$FTP_DIRECTORY/$username/$FTP_USER_SUBFOLER"
-    chown $username:ftpaccess "$FTP_DIRECTORY/$username/$FTP_USER_SUBFOLER"
-    chmod 750 "$FTP_DIRECTORY/$username/$FTP_USER_SUBFOLER"
+    for subfolder in $FTP_USER_SUBFOLERS; do
+      mkdir -p "$FTP_DIRECTORY/$username/$subfolder"
+      chown $username:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
+      chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
+    done
   fi
   
 done

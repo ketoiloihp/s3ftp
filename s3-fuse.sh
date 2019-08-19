@@ -1,6 +1,5 @@
 #!/bin/bash
 
-FTP_USER_SUBFOLER=${USER_SUBFOLER:-"files"}
 FTP_SUBFOLER_NAME=${FTP_SUBFOLER:-"ftp-users"}
 IAM_ROLE=${IAM_ROLE:-"auto"}
 
