@@ -19,6 +19,11 @@ for u in $USERS; do
   read username passwd <<< $(echo $u | sed 's/:/ /g')
 
   # User needs to be created every time since stopping the docker container gets rid of users.
+  if [ -z $ROOT_FOLDER ]; then
+    useradd -d "$FTP_DIRECTORY/$username" -s /usr/sbin/nologin $username
+  else
+    useradd -d "$ROOT_FOLDER" -s /usr/sbin/nologin $username
+  fi
   useradd -d "$FTP_DIRECTORY/$username" -s /usr/sbin/nologin $username
   usermod -G ftpaccess $username
 
@@ -54,7 +59,6 @@ for u in $USERS; do
         chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
       done
     else
-      usermod --home $ROOT_FOLDER $username
       chown root:ftpaccess "$ROOT_FOLDER"
       chmod 750 "$ROOT_FOLDER"
       echo "local_root=$ROOT_FOLDER" >> /etc/vsftpd_user_conf/$username
