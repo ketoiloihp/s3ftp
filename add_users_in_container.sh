@@ -1,7 +1,7 @@
 #!/bin/bash
 # This script will update the env.list file (file containing USERS environrment variable) and add the new users if there are any.
 # Will check for new users at a given time interval (change sleep duration on line 33)
-FTP_USER_SUBFOLERS=${USER_SUBFOLER:-"files"}
+FTP_USER_SUBFOLERS=${USER_SUBFOLERS:-"files"}
 FTP_SUBFOLER_NAME=${FTP_SUBFOLER:-"ftp-users"}
 FTP_DIRECTORY="/home/aws/s3bucket/${FTP_SUBFOLER_NAME}"
 

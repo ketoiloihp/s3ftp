@@ -1,6 +1,6 @@
 #!/bin/bash
 
-FTP_USER_SUBFOLERS=${USER_SUBFOLER:-"files"}
+FTP_USER_SUBFOLERS=${USER_SUBFOLERS:-"files"}
 FTP_SUBFOLER_NAME=${FTP_SUBFOLER:-"ftp-users"}
 FTP_DIRECTORY="/home/aws/s3bucket/${FTP_SUBFOLER_NAME}"
 
