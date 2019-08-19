@@ -49,7 +49,7 @@ add_users() {
   if ! getent passwd "$username" >/dev/null 2>&1; then
       useradd -d "$FTP_DIRECTORY/$username" -s /usr/sbin/nologin $username
       usermod -G ftpaccess $username
-
+ 
       mkdir -p "$FTP_DIRECTORY/$username"
       chown root:ftpaccess "$FTP_DIRECTORY/$username"
       chmod 750 "$FTP_DIRECTORY/$username"
@@ -57,21 +57,43 @@ add_users() {
 
     # create folder follow the structure
     for subfolder in $FTP_USER_SUBFOLERS; do
-      mkdir -p "$FTP_DIRECTORY/$username/$subfolder"
+      if echo "$subfolder" | grep '/' > /dev/null; then
+        FOLDER_NAME=`echo $subfolder | rev | cut -d'/' -f1 | rev`
+        #echo $FOLDER_NAME
+        ln -s $FTP_DIRECTORY/$username/$subfolder $FTP_DIRECTORY/$username/$FOLDER_NAME
+        chmod 770 "$FTP_DIRECTORY/$username/$subfolder"
+      else
+        mkdir -p "$FTP_DIRECTORY/$username/$subfolder"
+        chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
+      fi
       chown root:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
-      chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
     done
+
     #enable write for some folder
     for subfolder in $FTP_USER_SUBFOLERS_RW; do
       if [ -d "$FTP_DIRECTORY/$username/$subfolder" ]; then
-        mkdir -p "$FTP_DIRECTORY/$username/$subfolder"
+        if echo "$subfolder" | grep '/' > /dev/null; then
+          FOLDER_NAME=`echo $subfolder | rev | cut -d'/' -f1 | rev`
+          #echo $FOLDER_NAME
+          ln -s $FTP_DIRECTORY/$username/$subfolder $FTP_DIRECTORY/$username/$FOLDER_NAME
+          chmod 770 "$FTP_DIRECTORY/$username/$subfolder"
+        else
+          mkdir -p "$FTP_DIRECTORY/$username/$subfolder"
+          chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
+        fi
         chown $username:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
-        chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
       fi
     done
+
     for subfolder in $FTP_USER_SUBFOLERS_R; do
       if [ -d "$FTP_DIRECTORY/$username/$subfolder" ]; then
-        mkdir -p "$FTP_DIRECTORY/$username/$subfolder"
+        if echo "$subfolder" | grep '/' > /dev/null; then
+          FOLDER_NAME=`echo $subfolder | rev | cut -d'/' -f1 | rev`
+          #echo $FOLDER_NAME
+          ln -s $FTP_DIRECTORY/$username/$subfolder $FTP_DIRECTORY/$username/$FOLDER_NAME
+        else
+          mkdir -p "$FTP_DIRECTORY/$username/$subfolder"
+        fi
         chown root:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
         chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
       fi
