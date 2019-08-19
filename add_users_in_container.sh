@@ -3,6 +3,7 @@
 # Will check for new users at a given time interval (change sleep duration on line 33)
 FTP_USER_SUBFOLERS=${USER_SUBFOLERS:-"files"}
 FTP_USER_SUBFOLERS_RW=${USER_SUBFOLERS_RW:-""}
+FTP_USER_SUBFOLERS_RW=${USER_SUBFOLERS_RW:-$FTP_USER_SUBFOLERS}
 FTP_SUBFOLER_NAME=${FTP_SUBFOLER:-"ftp-users"}
 FTP_DIRECTORY="/home/aws/s3bucket/${FTP_SUBFOLER_NAME}"
 
@@ -53,7 +54,7 @@ add_users() {
       chmod 750 "$FTP_DIRECTORY/$username"
       for subfolder in $FTP_USER_SUBFOLERS; do
         mkdir -p "$FTP_DIRECTORY/$username/$subfolder"
-        chown $username:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
+        chown root:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
         chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
       done
     fi
@@ -61,7 +62,9 @@ add_users() {
     #enable write for some folder
     for subfolder in $FTP_USER_SUBFOLERS_RW; do
       if [ -d "$FTP_DIRECTORY/$username/$subfolder" ]; then
-        chmod 770 "$FTP_DIRECTORY/$username/$subfolder"
+        mkdir -p "$FTP_DIRECTORY/$username/$subfolder"
+        chown $username:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
+        chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
       fi
     done
   done
