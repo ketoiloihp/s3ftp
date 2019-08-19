@@ -51,9 +51,9 @@ add_users() {
       chown root:ftpaccess "$FTP_DIRECTORY/$username"
       chmod 750 "$FTP_DIRECTORY/$username"
       for subfolder in $FTP_USER_SUBFOLERS; do
-        mkdir -p "$FTP_DIRECTORY/$username/$FTP_USER_SUBFOLER"
-        chown $username:ftpaccess "$FTP_DIRECTORY/$username/$FTP_USER_SUBFOLER"
-        chmod 750 "$FTP_DIRECTORY/$username/$FTP_USER_SUBFOLER"
+        mkdir -p "$FTP_DIRECTORY/$username/$subfolder"
+        chown $username:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
+        chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
       done
     fi
   done
