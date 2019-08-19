@@ -37,8 +37,9 @@ To run:
 3. ` CONFIG_BUCKET ` = S3 bucket where the config data (env.list file) will be stored.
 4. ` IAM_ROLE ` = name of role account linked to EC2 instance the container is running in. ( Default: 'auto')
 4. ` FTP_USER_SUBFOLERS ` = name of user's subfolder. ( Default: 'files') ( You also can put multiple folders 'userfolder1 userfolder2').
-5.  ` FTP_USER_SUBFOLERS_RW ` = name of user's subfolder can be write ( Default all subfolder can be write) 
+5. ` FTP_USER_SUBFOLERS_RW ` = name of user's subfolder can be write ( Default all subfolder can be write) 
 6. ` FTP_SUBFOLER_NAME ` = name of folder will store all the files on s3 ( Default: 'ftp-users' )
+7. ` ROOT_FOLDER ` = if you want to use one folder for all user ( Default: empty )
 
 ### Optional Environment Variables
 These two environment variables only need to be set if there is no linked IAM role to the EC2 instance.
