@@ -54,7 +54,7 @@ for u in $USERS; do
         chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
       done
     else
-      usermod --home $ROOT_FOLDER
+      usermod --home $ROOT_FOLDER $username
       chown root:ftpaccess "$ROOT_FOLDER"
       chmod 750 "$ROOT_FOLDER"
 
