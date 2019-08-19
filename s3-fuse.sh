@@ -2,6 +2,9 @@
 
 FTP_SUBFOLER_NAME=${FTP_SUBFOLER:-"ftp-users"}
 IAM_ROLE=${IAM_ROLE:-"auto"}
+if [ !-z $ROOT_FOLDER ]; then
+  echo "local_root=$ROOT_FOLDER" >> /etc/vsftpd.conf
+fi
 
 # Check first if the required FTP_BUCKET variable was provided, if not, abort.
 if [ -z $FTP_BUCKET ]; then

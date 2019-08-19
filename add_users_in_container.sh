@@ -33,13 +33,17 @@ add_users() {
       # This would not allow ftp users to read the files
       for subfolder in $FTP_USER_SUBFOLERS; do
         # Search for files and directories not owned correctly
-        find "$FTP_DIRECTORY"/"$username"/"$subfolder"/* \( \! -user "$username" \! -group "$username" \) -print0 | xargs -0 chown "$username:$username"
+        if echo "$subfolder" | grep '/' > /dev/null; then
+          echo "Link folder"
+        else
+          find "$FTP_DIRECTORY"/"$username"/"$subfolder"/* \( \! -user "$username" \! -group "$username" \) -print0 | xargs -0 chown "$username:$username"
 
-        # Search for files with incorrect permissions
-        find "$FTP_DIRECTORY"/"$username"/"$subfolder"/* -type f \! -perm "$FILE_PERMISSIONS" -print0 | xargs -0 chmod "$FILE_PERMISSIONS"
+          # Search for files with incorrect permissions
+          find "$FTP_DIRECTORY"/"$username"/"$subfolder"/* -type f \! -perm "$FILE_PERMISSIONS" -print0 | xargs -0 chmod "$FILE_PERMISSIONS"
 
-        # Search for directories with incorrect permissions
-        find "$FTP_DIRECTORY"/"$username"/$subfolder/* -type d \! -perm "$DIRECTORY_PERMISSIONS" -print0 | xargs -0 chmod "$DIRECTORY_PERMISSIONS"
+          # Search for directories with incorrect permissions
+          find "$FTP_DIRECTORY"/"$username"/$subfolder/* -type d \! -perm "$DIRECTORY_PERMISSIONS" -print0 | xargs -0 chmod "$DIRECTORY_PERMISSIONS"
+        fi
       done
 
     fi
@@ -57,13 +61,10 @@ add_users() {
 
     # create folder follow the structure
     for subfolder in $FTP_USER_SUBFOLERS; do
+      mkdir -p $FTP_DIRECTORY/$username/$subfolder
       if echo "$subfolder" | grep '/' > /dev/null; then
-        FOLDER_NAME=`echo $subfolder | rev | cut -d'/' -f1 | rev`
-        #echo $FOLDER_NAME
-        ln -s $FTP_DIRECTORY/$username/$subfolder $FTP_DIRECTORY/$username/$FOLDER_NAME
         chmod 770 "$FTP_DIRECTORY/$username/$subfolder"
       else
-        mkdir -p "$FTP_DIRECTORY/$username/$subfolder"
         chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
       fi
       chown root:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
@@ -71,26 +72,17 @@ add_users() {
 
     #enable write for some folder
     for subfolder in $FTP_USER_SUBFOLERS_RW; do
+      mkdir -p $FTP_DIRECTORY/$username/$subfolder
       if echo "$subfolder" | grep '/' > /dev/null; then
-        FOLDER_NAME=`echo $subfolder | rev | cut -d'/' -f1 | rev`
-        #echo $FOLDER_NAME
-        ln -s $FTP_DIRECTORY/$username/$subfolder $FTP_DIRECTORY/$username/$FOLDER_NAME
         chmod 770 "$FTP_DIRECTORY/$username/$subfolder"
       else
-        mkdir -p "$FTP_DIRECTORY/$username/$subfolder"
         chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
       fi
       chown $username:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
     done
 
     for subfolder in $FTP_USER_SUBFOLERS_R; do
-      if echo "$subfolder" | grep '/' > /dev/null; then
-        FOLDER_NAME=`echo $subfolder | rev | cut -d'/' -f1 | rev`
-        #echo $FOLDER_NAME
-        ln -s $FTP_DIRECTORY/$username/$subfolder $FTP_DIRECTORY/$username/$FOLDER_NAME
-      else
-        mkdir -p "$FTP_DIRECTORY/$username/$subfolder"
-      fi
+      mkdir -p $FTP_DIRECTORY/$username/$subfolder
       chown root:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
       chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
     done
