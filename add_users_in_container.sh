@@ -4,6 +4,7 @@
 FTP_USER_SUBFOLERS=${USER_SUBFOLERS:-"files"}
 FTP_USER_SUBFOLERS_RW=${USER_SUBFOLERS_RW:-""}
 FTP_USER_SUBFOLERS_RW=${USER_SUBFOLERS_RW:-$FTP_USER_SUBFOLERS}
+FTP_USER_SUBFOLERS_R=${USER_SUBFOLERS_R:-""}
 FTP_SUBFOLER_NAME=${FTP_SUBFOLER:-"ftp-users"}
 FTP_DIRECTORY="/home/aws/s3bucket/${FTP_SUBFOLER_NAME}"
 
@@ -65,6 +66,13 @@ add_users() {
       if [ -d "$FTP_DIRECTORY/$username/$subfolder" ]; then
         mkdir -p "$FTP_DIRECTORY/$username/$subfolder"
         chown $username:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
+        chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
+      fi
+    done
+    for subfolder in $FTP_USER_SUBFOLERS_R; do
+      if [ -d "$FTP_DIRECTORY/$username/$subfolder" ]; then
+        mkdir -p "$FTP_DIRECTORY/$username/$subfolder"
+        chown root:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
         chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
       fi
     done
