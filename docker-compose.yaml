@@ -1,0 +1,15 @@
+version: '2'
+
+services:
+  s3ftp:
+    container_name: s3ftp
+    image: s3ftp
+    privileged: true
+    environment:
+      - CONFIG_BUCKET=ftp_bucket_name
+      - FTP_BUCKET=ftp_bucket_name
+      - IAM_ROLE=auto
+    ports:
+      - "21:21"
+      - "22:22"
+    restart: always
