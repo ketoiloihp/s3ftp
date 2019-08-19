@@ -52,13 +52,14 @@ add_users() {
       mkdir -p "$FTP_DIRECTORY/$username"
       chown root:ftpaccess "$FTP_DIRECTORY/$username"
       chmod 750 "$FTP_DIRECTORY/$username"
-      for subfolder in $FTP_USER_SUBFOLERS; do
-        mkdir -p "$FTP_DIRECTORY/$username/$subfolder"
-        chown root:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
-        chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
-      done
     fi
 
+    # create folder follow the structure
+    for subfolder in $FTP_USER_SUBFOLERS; do
+      mkdir -p "$FTP_DIRECTORY/$username/$subfolder"
+      chown root:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
+      chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
+    done
     #enable write for some folder
     for subfolder in $FTP_USER_SUBFOLERS_RW; do
       if [ -d "$FTP_DIRECTORY/$username/$subfolder" ]; then
