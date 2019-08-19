@@ -76,35 +76,38 @@ add_users() {
     for subfolder in $FTP_USER_SUBFOLERS; do
       if [ ! -z $ROOT_FOLDER ]; then
         mkdir -p $ROOT_FOLDER/$subfolder
+        chown $username:ftpaccess "$ROOT_FOLDER/$subfolder"
         chmod 770 "$ROOT_FOLDER/$subfolder"
       else
         mkdir -p $FTP_DIRECTORY/$username/$subfolder
+        chown $username:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
         chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
       fi
-      chown root:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
     done
 
     #enable write for some folder
     for subfolder in $FTP_USER_SUBFOLERS_RW; do
       if [ ! -z $ROOT_FOLDER ]; then
         mkdir -p $ROOT_FOLDER/$subfolder
+        chown $username:ftpaccess "$ROOT_FOLDER/$subfolder"
         chmod 770 "$ROOT_FOLDER/$subfolder"
       else
         mkdir -p $FTP_DIRECTORY/$username/$subfolder
+        chown $username:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
         chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
       fi
-      chown $username:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
     done
 
     for subfolder in $FTP_USER_SUBFOLERS_R; do
       if [ ! -z $ROOT_FOLDER ]; then
         mkdir -p $ROOT_FOLDER/$subfolder
+        chown root:ftpaccess "$ROOT_FOLDER/$subfolder"
+        chmod 750 "$ROOT_FOLDER/$subfolder"
       else
         mkdir -p $FTP_DIRECTORY/$username/$subfolder
+        chown root:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
+        chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
       fi
-      mkdir -p $FTP_DIRECTORY/$username/$subfolder
-      chown root:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
-      chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
     done
   done
 }
