@@ -1,14 +1,19 @@
-version: '2'
+version: '2.2'
 
 services:
   s3ftp:
     container_name: s3ftp
     image: s3ftp
+    mem_limit: 512m
+    mem_reservation: 256m
+    cpu_percent: 20
     privileged: true
     environment:
-      - CONFIG_BUCKET=ftp_bucket_name
-      - FTP_BUCKET=ftp_bucket_name
-      - IAM_ROLE=auto
+      - CONFIG_BUCKET=bucket_name/path
+      - FTP_BUCKET=bucket_name
+      # - USER_SUBFOLERS=folder_rw
+      # - USER_SUBFOLERS_R=folder_readonly
+      # - ROOT_FOLDER=/home/aws/s3bucket/integration/ptf/
     ports:
       - "21:21"
       - "22:22"

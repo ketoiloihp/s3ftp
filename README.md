@@ -10,7 +10,7 @@ Ref: [https://github.com/Factual/open-dockerfiles](https://github.com/Factual/op
 To run:
 
 1. Replace `env.list.example` file with a real `env.list` file with correct variables filled in.
-    - Add users to `USERS` environment variable. These should be listed in the form `username:hashedpassword`, each separated by a space.
+    - Add users to `USERS` environment variable. These should be listed in the form `username:hashedpassword:userfolder`, each separated by a space.
      - Passwords for those users should be hashed. There are several ways to hash a user password. A common way is to execute a command like the following: `openssl passwd -crypt {your_password}`. Substitute `{your_password}` with the one you want to hash.
      - You may also use non-hashed passwords if storing passwords in plaintext is fine. To do this, change line ` echo $u | chpasswd -e ` => ` echo $u | chpasswd ` in the `users.sh` file (line #24).
     - Specify the S3 buckets were the files (`FTP_BUCKET`) and configs (`CONFIG_BUCKET`) will be stored.
@@ -39,7 +39,8 @@ To run:
 4. ` FTP_USER_SUBFOLERS ` = name of user's subfolder. ( Default: 'files') ( You also can put multiple folders 'userfolder1 userfolder2').
 5. ` FTP_USER_SUBFOLERS_RW ` = name of user's subfolder can be write ( Default all subfolder can be write) 
 6. ` FTP_SUBFOLER_NAME ` = name of folder will store all the files on s3 ( Default: 'ftp-users' )
-7. ` ROOT_FOLDER ` = if you want to use one folder for all user ( Default: empty )
+7. ` ROOT_FOLDER ` = if you want to link another folder on /home/aws/s3bucket
+8. ` DISABLED_LOGIN_PWD ` = disabled login sftp by password
 
 ### Optional Environment Variables
 These two environment variables only need to be set if there is no linked IAM role to the EC2 instance.

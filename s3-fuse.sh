@@ -2,6 +2,12 @@
 
 FTP_SUBFOLER_NAME=${FTP_SUBFOLER:-"ftp-users"}
 IAM_ROLE=${IAM_ROLE:-"auto"}
+
+# create a link folder if the link is change
+if [ "$FTP_SUBFOLER_NAME" != "ftp-users" ]; then
+  echo "secure_chroot_dir=/home/aws/s3bucket/$FTP_SUBFOLER_NAME" >> /etc/vsftpd.conf
+fi
+
 if [ ! -z $ROOT_FOLDER ]; then
   echo "secure_chroot_dir=$ROOT_FOLDER" >> /etc/vsftpd.conf
 fi
@@ -43,11 +49,6 @@ if curl -s http://instance-data.ec2.internal > /dev/null ; then
 else
   echo "Not Running on ec2"
   #exit 1
-fi
-
-# create a link folder if the link is change
-if [ "$FTP_SUBFOLER_NAME" != "ftp-users" ]; then
-  ln -s /home/aws/s3bucket/$FTP_SUBFOLER_NAME /home/aws/s3bucket/ftp-users
 fi
 
 # start s3 fuse
