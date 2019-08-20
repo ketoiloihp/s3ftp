@@ -16,14 +16,17 @@ chmod 755 $FTP_DIRECTORY
 # Expecing an environment variable called USERS to look like "bob:hashedbobspassword steve:hashedstevespassword"
 for u in $USERS; do
   
-  read username passwd <<< $(echo $u | sed 's/:/ /g')
+  read username passwd user_folder<<< $(echo $u | sed 's/:/ /g')
+
+  USER_PATH="$ROOT_FOLDER"/"$username"
+  if [ ! -z $ROOT_FOLDER ]; then
+    USER_PATH="$ROOT_FOLDER"/"$user_folder"
+  else
+    USER_PATH="$ROOT_FOLDER"/"$user_folder"
+  fi
 
   # User needs to be created every time since stopping the docker container gets rid of users.
-  if [ -z $ROOT_FOLDER ]; then
-    useradd -d "$FTP_DIRECTORY/$username" -s /usr/sbin/nologin $username
-  else
-    useradd -d "$ROOT_FOLDER" -s /usr/sbin/nologin $username
-  fi
+  useradd -d "$USER_PATH" -s /usr/sbin/nologin $username
   usermod -G ftpaccess $username
 
   # set the users password
@@ -32,41 +35,28 @@ for u in $USERS; do
   if [ -z "$username" ] || [ -z "$passwd" ]; then
     echo "Invalid username:password combination '$u': please fix to create '$username'"
     continue
-  elif [[ -d "$FTP_DIRECTORY/$username"  && -z $ROOT_FOLDER ]]; then
+  elif [[ -d "$USER_PATH" ]]; then
     echo "Skipping creation of '$username' directory: already exists"
 
     # Directory exists but permissions for it have to be setup anyway.
-    chown root:ftpaccess "$FTP_DIRECTORY/$username"
-    chmod 750 "$FTP_DIRECTORY/$username"
+    chown root:ftpaccess "$USER_PATH"
+    chmod 750 "$USER_PATH"
     for subfolder in $FTP_USER_SUBFOLERS; do
-      chown $username:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
-      chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
+      chown $username:ftpaccess "$USER_PATH/$subfolder"
+      chmod 750 "$USER_PATH/$subfolder"
     done
   else
     echo "Creating '$username' directory..."
     
     # Root must own all directories leading up to and including users home directory
-    if [ -z $ROOT_FOLDER ]; then
-      mkdir -p "$FTP_DIRECTORY/$username"
-      chown root:ftpaccess "$FTP_DIRECTORY/$username"
-      chmod 750 "$FTP_DIRECTORY/$username"
+    chown root:ftpaccess "$USER_PATH"
+    chmod 750 "$USER_PATH"
 
-      # Need files sub-directory for SFTP chroot
-      for subfolder in $FTP_USER_SUBFOLERS; do
-        mkdir -p "$FTP_DIRECTORY/$username/$subfolder"
-        chown $username:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
-        chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
-      done
-    else
-      chown root:ftpaccess "$ROOT_FOLDER"
-      chmod 750 "$ROOT_FOLDER"
-
-      # Need files sub-directory for SFTP chroot
-      for subfolder in $FTP_USER_SUBFOLERS; do
-        mkdir -p "$ROOT_FOLDER/$subfolder"
-        chown $username:ftpaccess "$ROOT_FOLDER/$subfolder"
-        chmod 750 "$ROOT_FOLDER/$subfolder"
-      done
-    fi
+    # Need files sub-directory for SFTP chroot
+    for subfolder in $FTP_USER_SUBFOLERS; do
+      mkdir -p "$USER_PATH/$subfolder"
+      chown $username:ftpaccess "$USER_PATH/$subfolder"
+      chmod 750 "$USER_PATH/$subfolder"
+    done
   fi
 done

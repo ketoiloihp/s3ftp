@@ -20,96 +20,77 @@ add_users() {
   USERS=$(cat ~/"$CONFIG_FILE" | grep USERS | cut -d '=' -f2)
 
   for u in $USERS; do
-    read username passwd <<< $(echo $u | sed 's/:/ /g')
+    read username passwd user_folder<<< $(echo $u | sed 's/:/ /g')
 
-    # If account exists set password again 
-    # In cases where password changes in env file
-    if getent passwd "$username" >/dev/null 2>&1; then
-      echo $u | chpasswd -e
-
-      # Fix for issue when pulling files that were uploaded directly to S3 (through aws web console)
-      # Permissions when uploaded directly through S3 Web client were set as:
-      # 000 root:root
-      # This would not allow ftp users to read the files
-      for subfolder in $FTP_USER_SUBFOLERS; do
-        # Search for files and directories not owned correctly
-        if [ ! -z $ROOT_FOLDER ]; then
-          find "$ROOT_FOLDER"/"$subfolder"/* \( \! -user "$username" \! -group "$username" \) -print0 | xargs -0 chown "$username:$username"
-
-          # Search for files with incorrect permissions
-          find "$ROOT_FOLDER"/"$subfolder"/* -type f \! -perm "$FILE_PERMISSIONS" -print0 | xargs -0 chmod "$FILE_PERMISSIONS"
-
-          # Search for directories with incorrect permissions
-          find "$ROOT_FOLDER"/$subfolder/* -type d \! -perm "$DIRECTORY_PERMISSIONS" -print0 | xargs -0 chmod "$DIRECTORY_PERMISSIONS"
-        else
-          find "$FTP_DIRECTORY"/"$username"/"$subfolder"/* \( \! -user "$username" \! -group "$username" \) -print0 | xargs -0 chown "$username:$username"
-
-          # Search for files with incorrect permissions
-          find "$FTP_DIRECTORY"/"$username"/"$subfolder"/* -type f \! -perm "$FILE_PERMISSIONS" -print0 | xargs -0 chmod "$FILE_PERMISSIONS"
-
-          # Search for directories with incorrect permissions
-          find "$FTP_DIRECTORY"/"$username"/$subfolder/* -type d \! -perm "$DIRECTORY_PERMISSIONS" -print0 | xargs -0 chmod "$DIRECTORY_PERMISSIONS"
-        fi
-      done
-
+    USER_PATH="$ROOT_FOLDER"/"$username"
+    if [ ! -z $ROOT_FOLDER ]; then
+      USER_PATH="$ROOT_FOLDER"/"$user_folder"
+    else
+      USER_PATH="$ROOT_FOLDER"/"$user_folder"
     fi
+    
+    cat ~/"$CONFIG_FILE" | grep "SSH_PUBLIC_KEY=$username" | (while read SSH_KEY_TEXT; do
+      SSH_PUBLIC_KEY=$(echo $SSH_KEY_TEXT | cut -d ':' -f2)
+
+      mkdir -p "$USER_PATH"
+      if [ ! -d "$USER_PATH"/.ssh ]; then
+        cp /root/.ssh $USER_PATH -R
+      fi
+      echo "$SSH_PUBLIC_KEY" >> $USER_PATH/.ssh/authorized_keys
+      chmod 600 $USER_PATH/.ssh/authorized_keys
+      chown $username.$username $USER_PATH/.ssh -R
+    done
+      # If account exists set password again 
+      # In cases where password changes in env file
+      if getent passwd "$username" >/dev/null 2>&1; then
+        if [ -z "$DISABLED_LOGIN_PWD" ]; then
+          echo $u | chpasswd -e
+        fi
+        
+        # Fix for issue when pulling files that were uploaded directly to S3 (through aws web console)
+        # Permissions when uploaded directly through S3 Web client were set as:
+        # 000 root:root
+        # This would not allow ftp users to read the files
+        for subfolder in $FTP_USER_SUBFOLERS; do
+          # Search for files and directories not owned correctly
+          find "$USER_PATH"/"$subfolder"/* \( \! -user "$username" \! -group "$username" \) -print0 | xargs -0 chown "$username:$username"
+
+          # Search for files with incorrect permissions
+          find "$USER_PATH"/"$subfolder"/* -type f \! -perm "$FILE_PERMISSIONS" -print0 | xargs -0 chmod "$FILE_PERMISSIONS"
+
+          # Search for directories with incorrect permissions
+          find "$USER_PATH"/$subfolder/* -type d \! -perm "$DIRECTORY_PERMISSIONS" -print0 | xargs -0 chmod "$DIRECTORY_PERMISSIONS"
+        done
+      fi
 
     # If user account doesn't exist create it 
     # As well as their home directory 
-  if ! getent passwd "$username" >/dev/null 2>&1; then
-      if [ -z $ROOT_FOLDER ]; then
-        useradd -d "$FTP_DIRECTORY/$username" -s /usr/sbin/nologin $username
-        usermod -G ftpaccess $username
-  
-        mkdir -p "$FTP_DIRECTORY/$username"
-        chown root:ftpaccess "$FTP_DIRECTORY/$username"
-        chmod 750 "$FTP_DIRECTORY/$username"
-      else
-        useradd -d "$ROOT_FOLDER" -s /usr/sbin/nologin $username
-        usermod -G ftpaccess $username
-        chown root:ftpaccess "$ROOT_FOLDER"
-        chmod 750 "$ROOT_FOLDER"
-      fi
-      
-
+    if ! getent passwd "$username" >/dev/null 2>&1; then
+      useradd -d "$USER_PATH" -s /usr/sbin/nologin $username
+      usermod -G ftpaccess $username
+      chown root:ftpaccess "$USER_PATH"
+      chmod 750 "$USER_PATH"
     fi
+    )
 
     # create folder follow the structure
     for subfolder in $FTP_USER_SUBFOLERS; do
-      if [ ! -z $ROOT_FOLDER ]; then
-        mkdir -p $ROOT_FOLDER/$subfolder
-        chown $username:ftpaccess "$ROOT_FOLDER/$subfolder"
-        chmod 770 "$ROOT_FOLDER/$subfolder"
-      else
-        mkdir -p $FTP_DIRECTORY/$username/$subfolder
-        chown $username:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
-        chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
-      fi
+      mkdir -p $USER_PATH/$subfolder
+      chown $username:ftpaccess "$USER_PATH/$subfolder"
+      chmod 770 "$USER_PATH/$subfolder"
     done
 
     #enable write for some folder
     for subfolder in $FTP_USER_SUBFOLERS_RW; do
-      if [ ! -z $ROOT_FOLDER ]; then
-        mkdir -p $ROOT_FOLDER/$subfolder
-        chown $username:ftpaccess "$ROOT_FOLDER/$subfolder"
-        chmod 770 "$ROOT_FOLDER/$subfolder"
-      else
-        mkdir -p $FTP_DIRECTORY/$username/$subfolder
-        chown $username:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
-        chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
-      fi
+      mkdir -p $USER_PATH/$subfolder
+      chown $username:ftpaccess "$USER_PATH/$subfolder"
+      chmod 750 "$USER_PATH/$subfolder"
     done
 
     for subfolder in $FTP_USER_SUBFOLERS_R; do
-      if [ ! -z $ROOT_FOLDER ]; then
-        mkdir -p $ROOT_FOLDER/$subfolder
-        chown root:ftpaccess "$ROOT_FOLDER/$subfolder"
-        chmod 750 "$ROOT_FOLDER/$subfolder"
-      else
-        mkdir -p $FTP_DIRECTORY/$username/$subfolder
-        chown root:ftpaccess "$FTP_DIRECTORY/$username/$subfolder"
-        chmod 750 "$FTP_DIRECTORY/$username/$subfolder"
-      fi
+      mkdir -p $USER_PATH/$subfolder
+      chown root:ftpaccess "$USER_PATH/$subfolder"
+      chmod 750 "$USER_PATH/$subfolder"
     done
   done
 }
