@@ -11,7 +11,7 @@ services:
     environment:
       - CONFIG_BUCKET=bucket_name/path
       - FTP_BUCKET=bucket_name
-      - FTP_DENIED_PERMISSION=DELE,RMD
+      - FTP_DENIED_PERMISSION=DELE,RMD,RNFR,RNTO
       - FTP_LOCAL_MASH=222
       # - USER_SUBFOLERS=folder_rw
       # - USER_SUBFOLERS_R=folder_readonly

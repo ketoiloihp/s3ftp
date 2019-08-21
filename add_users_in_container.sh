@@ -10,7 +10,7 @@ FTP_DIRECTORY="/home/aws/s3bucket/${FTP_SUBFOLER_NAME}"
 CHMOD_MASK=750
 
 if [ ! -z "$FTP_LOCAL_MASH" ]; then
-  CHMOD_MASK=$((777 - $(echo 002 | sed 's/^0*//')))
+  CHMOD_MASK=$((777 - $(echo $FTP_LOCAL_MASH | sed 's/^0*//')))
 fi
 
 CONFIG_FILE="env.list" # May need to modify config file name to reflect future changes in env file location/name
