@@ -8,6 +8,14 @@ if [ "$FTP_SUBFOLER_NAME" != "ftp-users" ]; then
   echo "secure_chroot_dir=/home/aws/s3bucket/$FTP_SUBFOLER_NAME" >> /etc/vsftpd.conf
 fi
 
+if [ -z "$FTP_DENIED_PERMISSION" ]; then
+  echo "cmds_denied=$FTP_DENIED_PERMISSION" >> /etc/vsftpd.conf
+fi
+
+if [ -z "$FTP_LOCAL_MASH" ]; then
+  echo "local_umask=$FTP_LOCAL_MASH" >> /etc/vsftpd.conf
+fi
+
 if [ ! -z $ROOT_FOLDER ]; then
   echo "secure_chroot_dir=$ROOT_FOLDER" >> /etc/vsftpd.conf
 fi
