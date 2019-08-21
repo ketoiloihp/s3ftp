@@ -43,7 +43,8 @@ Subsystem sftp internal-sftp
 #Subsystem sftp internal-sftp -u 0002
 
 Match Group ftpaccess
-    PasswordAuthentication yes
+#   PasswordAuthentication yes
+    PasswordAuthentication no
     ChrootDirectory %h
     X11Forwarding no
     AllowTcpForwarding no

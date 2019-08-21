@@ -16,10 +16,31 @@ if [ ! -z "$FTP_LOCAL_MASH" ]; then
   CHMOD_MASK=$((777 - $(echo $FTP_LOCAL_MASH | sed 's/^0*//')))
   echo "local_umask=$FTP_LOCAL_MASH" >> /etc/vsftpd.conf
   echo "file_open_mode=$CHMOD_MASK" >> /etc/vsftpd.conf
+  echo "chown_upload_mode=$CHMOD_MASK" >> /etc/vsftpd.conf
+
+cat <<EOT >> /etc/ssh/sshd_config
+Match Group ftpaccess
+#   PasswordAuthentication yes
+    PasswordAuthentication no
+    ChrootDirectory %h
+    X11Forwarding no
+    AllowTcpForwarding no
+    ForceCommand internal-sftp -u 222 -P remove,rmdir,setstat,fsetstat
+EOT
+
+  /etc/init.d/ssh restart
+else
+  echo "local_umask=022" >> /etc/vsftpd.conf
+fi
+
+if [ ! -z "$FTP_DISABLED_CHMOD" ]; then
+  echo "chmod_enable=NO" >> /etc/vsftpd.conf
 fi
 
 if [ ! -z $ROOT_FOLDER ]; then
   echo "secure_chroot_dir=$ROOT_FOLDER" >> /etc/vsftpd.conf
+else
+  echo "secure_chroot_dir=/home/aws/s3bucket/ftp-users" >> /etc/vsftpd.conf
 fi
 
 # Check first if the required FTP_BUCKET variable was provided, if not, abort.
