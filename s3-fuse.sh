@@ -25,11 +25,20 @@ Match Group ftpaccess
     ChrootDirectory %h
     X11Forwarding no
     AllowTcpForwarding no
-    ForceCommand internal-sftp -u 222 -P remove,rmdir,setstat,fsetstat
+    ForceCommand internal-sftp -u 0222 -P remove,rmdir,setstat,fsetstat
 EOT
-
   /etc/init.d/ssh restart
 else
+
+cat <<EOT >> /etc/ssh/sshd_config
+Match Group ftpaccess
+#   PasswordAuthentication yes
+    PasswordAuthentication no
+    ChrootDirectory %h
+    X11Forwarding no
+    AllowTcpForwarding no
+    ForceCommand internal-sftp
+EOT
   echo "local_umask=022" >> /etc/vsftpd.conf
 fi
 
