@@ -12,6 +12,11 @@ groupadd ftpaccess
 mkdir -p $FTP_DIRECTORY
 chown root:root $FTP_DIRECTORY
 chmod 755 $FTP_DIRECTORY
+CHMOD_MASK=750
+
+if [ ! -z "$FTP_LOCAL_MASH" ]; then
+  CHMOD_MASK=$((777 - $(echo 002 | sed 's/^0*//')))
+fi
 
 # Expecing an environment variable called USERS to look like "bob:hashedbobspassword steve:hashedstevespassword"
 for u in $USERS; do

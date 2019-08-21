@@ -7,6 +7,11 @@ FTP_USER_SUBFOLERS_RW=${USER_SUBFOLERS_RW:-$FTP_USER_SUBFOLERS}
 FTP_USER_SUBFOLERS_R=${USER_SUBFOLERS_R:-""}
 FTP_SUBFOLER_NAME=${FTP_SUBFOLER:-"ftp-users"}
 FTP_DIRECTORY="/home/aws/s3bucket/${FTP_SUBFOLER_NAME}"
+CHMOD_MASK=750
+
+if [ ! -z "$FTP_LOCAL_MASH" ]; then
+  CHMOD_MASK=$((777 - $(echo 002 | sed 's/^0*//')))
+fi
 
 CONFIG_FILE="env.list" # May need to modify config file name to reflect future changes in env file location/name
 SLEEP_DURATION=60
@@ -77,10 +82,10 @@ add_users() {
     for subfolder in $FTP_USER_SUBFOLERS; do
       mkdir -p $USER_PATH/$subfolder
       chown $username:ftpaccess "$USER_PATH/$subfolder"
-      chmod 770 "$USER_PATH/$subfolder"
+      chmod 750 "$USER_PATH/$subfolder"
     done
 
-    #enable write for some folder
+    # enable write for some folder
     for subfolder in $FTP_USER_SUBFOLERS_RW; do
       mkdir -p $USER_PATH/$subfolder
       chown $username:ftpaccess "$USER_PATH/$subfolder"
@@ -90,7 +95,7 @@ add_users() {
     for subfolder in $FTP_USER_SUBFOLERS_R; do
       mkdir -p $USER_PATH/$subfolder
       chown root:ftpaccess "$USER_PATH/$subfolder"
-      chmod 750 "$USER_PATH/$subfolder"
+      chmod $CHMOD_MASK "$USER_PATH/$subfolder"
     done
   done
 }
