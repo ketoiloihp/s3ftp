@@ -25,9 +25,11 @@ Match Group ftpaccess
     ChrootDirectory %h
     X11Forwarding no
     AllowTcpForwarding no
-    ForceCommand internal-sftp -u 0222 -P remove,rmdir,setstat,fsetstat
+    PermitTunnel no
+    AllowAgentForwarding no
+    ForceCommand internal-sftp -u 0222 -P rename,remove,rmdir,setstat,fsetstat
 EOT
-  /etc/init.d/ssh restart
+  service ssh restart
 else
 
 cat <<EOT >> /etc/ssh/sshd_config
