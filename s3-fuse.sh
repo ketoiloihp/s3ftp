@@ -33,7 +33,7 @@ else
 fi
 
 # set sftp mode to allow: read, upload, read & write
-if [ "$SFTP_MODE" == 'r' ]; then
+if [ "$SFTP_MODE" == "r" ]; then
   # read only
   cat /etc/ssh/sshd_config | grep "Match Group ftpaccess" > /dev/null
   if [ "$?" != "0" ]; then
@@ -48,7 +48,9 @@ Match Group ftpaccess
     AllowAgentForwarding no
     ForceCommand internal-sftp -R
 EOT
-elif [ "$SFTP_MODE" == 'u' ]; then
+  fi
+
+elif [ "$SFTP_MODE" == "u" ]; then
   #upload only
   cat /etc/ssh/sshd_config | grep "Match Group ftpaccess" > /dev/null
   if [ "$?" != "0" ]; then
@@ -63,6 +65,8 @@ Match Group ftpaccess
     AllowAgentForwarding no
     ForceCommand internal-sftp -u 0222 -P rename,remove,rmdir,setstat,fsetstat
 EOT
+  fi
+
 else
   # normal rw
   cat /etc/ssh/sshd_config | grep "Match Group ftpaccess" > /dev/null
@@ -76,6 +80,8 @@ Match Group ftpaccess
     AllowTcpForwarding no
     ForceCommand internal-sftp
 EOT
+  fi
+
 fi
 service ssh restart
 
