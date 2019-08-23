@@ -92,7 +92,7 @@ $PATH_ROOT=/home/aws/s3bucket/ftp-users
 if [ ! -z $ROOT_FOLDER ]; then
   PATH_ROOT=$ROOT_FOLDER
 fi
-cat /etc/vsftpd.conf | grep "secure_chroot_dir=$ROOT_FOLDER"
+cat /etc/vsftpd.conf | grep "secure_chroot_dir=$PATH_ROOT"
 if [ "$?" != "0" ]; then
   echo "secure_chroot_dir=$PATH_ROOT" >> /etc/vsftpd.conf
 fi
