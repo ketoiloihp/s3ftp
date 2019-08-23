@@ -8,6 +8,15 @@ IAM_ROLE=${IAM_ROLE:-"auto"}
 #   echo "secure_chroot_dir=/home/aws/s3bucket/$FTP_SUBFOLER_NAME" >> /etc/vsftpd.conf
 # fi
 
+# save template for rewrite when have new config
+if [ -f "/etc/vsftpd.conf.example" ]; then
+  cp /etc/vsftpd.conf /etc/vsftpd.conf.example
+fi
+cat /etc/vsftpd.conf.example > /etc/vsftpd.conf
+if [ -f "/etc/ssh/sshd_config.example" ]; then
+  cp /etc/ssh/sshd_config /etc/ssh/sshd_config.example
+fi
+cat /etc/ssh/sshd_config.example > /etc/vsftpd.conf
 # this option using for vsftpd only
 if [ ! -z "$FTP_DENIED_PERMISSION" ]; then
   cat /etc/vsftpd.conf | grep "cmds_denied=$FTP_DENIED_PERMISSION" > /dev/null
@@ -33,14 +42,17 @@ else
 fi
 
 # set sftp mode to allow: read, upload, read & write
+ENABLE_PWD_AUTH=yes
+if [ ! -z "$DISABLED_LOGIN_PWD" ]; then
+  ENABLE_PWD_AUTH=no
+fi
 if [ "$SFTP_MODE" == "r" ]; then
   # read only
   cat /etc/ssh/sshd_config | grep "Match Group ftpaccess" > /dev/null
   if [ "$?" != "0" ]; then
 cat <<EOT >> /etc/ssh/sshd_config
 Match Group ftpaccess
-#   PasswordAuthentication yes
-    PasswordAuthentication no
+    PasswordAuthentication $ENABLE_PWD_AUTH
     ChrootDirectory %h
     X11Forwarding no
     AllowTcpForwarding no
@@ -56,8 +68,7 @@ elif [ "$SFTP_MODE" == "u" ]; then
   if [ "$?" != "0" ]; then
 cat <<EOT >> /etc/ssh/sshd_config
 Match Group ftpaccess
-#   PasswordAuthentication yes
-    PasswordAuthentication no
+    PasswordAuthentication $ENABLE_PWD_AUTH
     ChrootDirectory %h
     X11Forwarding no
     AllowTcpForwarding no
@@ -73,8 +84,7 @@ else
   if [ "$?" != "0" ]; then
 cat <<EOT >> /etc/ssh/sshd_config
 Match Group ftpaccess
-#   PasswordAuthentication yes
-    PasswordAuthentication no
+    PasswordAuthentication $ENABLE_PWD_AUTH
     ChrootDirectory %h
     X11Forwarding no
     AllowTcpForwarding no
