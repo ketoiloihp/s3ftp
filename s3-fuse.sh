@@ -88,7 +88,7 @@ if [ ! -z "$FTP_DISABLED_CHMOD" ]; then
 fi
 
 # set a custom path default for ftp
-$PATH_ROOT=/home/aws/s3bucket/ftp-users
+PATH_ROOT=/home/aws/s3bucket/ftp-users
 if [ ! -z $ROOT_FOLDER ]; then
   PATH_ROOT=$ROOT_FOLDER
 fi
