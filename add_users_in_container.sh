@@ -22,8 +22,7 @@ DIRECTORY_PERMISSIONS=755
 if [ ! -z "$FTP_LOCAL_MASH" ]; then
   CHMOD_MASK=$((777 - $(echo $FTP_LOCAL_MASH | sed 's/^0*//')))
   FILE_PERMISSIONS=$CHMOD_MASK
-else
-
+fi
 
 add_users() {
   aws s3 cp s3://$CONFIG_BUCKET/$CONFIG_FILE ~/$CONFIG_FILE
