@@ -9,14 +9,14 @@ IAM_ROLE=${IAM_ROLE:-"auto"}
 # fi
 
 # save template for rewrite when have new config
-if [ -f "/etc/vsftpd.conf.example" ]; then
+if [ ! -f "/etc/vsftpd.conf.example" ]; then
   cp /etc/vsftpd.conf /etc/vsftpd.conf.example
 fi
 cat /etc/vsftpd.conf.example > /etc/vsftpd.conf
-if [ -f "/etc/ssh/sshd_config.example" ]; then
+if [ ! -f "/etc/ssh/sshd_config.example" ]; then
   cp /etc/ssh/sshd_config /etc/ssh/sshd_config.example
 fi
-cat /etc/ssh/sshd_config.example > /etc/vsftpd.conf
+cat /etc/ssh/sshd_config.example > /etc/ssh/sshd_config
 # this option using for vsftpd only
 if [ ! -z "$FTP_DENIED_PERMISSION" ]; then
   cat /etc/vsftpd.conf | grep "cmds_denied=$FTP_DENIED_PERMISSION" > /dev/null
