@@ -50,7 +50,7 @@ add_users() {
         echo "$SSH_PUBLIC_KEY" >> $USER_PATH/.ssh/authorized_keys
       fi
       chmod 600 $USER_PATH/.ssh/authorized_keys
-      chown $username.$username $USER_PATH/.ssh -R
+      chown $username:ftpaccess $USER_PATH/.ssh -R
     done
       # If account exists set password again 
       # In cases where password changes in env file
@@ -65,7 +65,7 @@ add_users() {
         # This would not allow ftp users to read the files
         for subfolder in $FTP_USER_SUBFOLERS; do
           # Search for files and directories not owned correctly
-          find "$USER_PATH"/"$subfolder"/* \( \! -user "$username" \! -group "$username" \) -print0 | xargs -0 chown "$username:$username"
+          find "$USER_PATH"/"$subfolder"/* \( \! -user "$username" \! -group "$username" \) -print0 | xargs -0 chown "$username:ftpaccess"
 
           # Search for files with incorrect permissions
           find "$USER_PATH"/"$subfolder"/* -type f \! -perm "$FILE_PERMISSIONS" -print0 | xargs -0 chmod "$FILE_PERMISSIONS"
