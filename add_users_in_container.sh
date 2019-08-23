@@ -41,7 +41,10 @@ add_users() {
       if [ ! -d "$USER_PATH"/.ssh ]; then
         cp /root/.ssh $USER_PATH -R
       fi
-      echo "$SSH_PUBLIC_KEY" >> $USER_PATH/.ssh/authorized_keys
+      cat $USER_PATH/.ssh/authorized_keys | grep "$SSH_PUBLIC_KEY" > /dev/null
+      if [ "$?" != "0" ]; then
+        echo "$SSH_PUBLIC_KEY" >> $USER_PATH/.ssh/authorized_keys
+      fi
       chmod 600 $USER_PATH/.ssh/authorized_keys
       chown $username.$username $USER_PATH/.ssh -R
     done

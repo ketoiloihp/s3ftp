@@ -8,16 +8,50 @@ IAM_ROLE=${IAM_ROLE:-"auto"}
 #   echo "secure_chroot_dir=/home/aws/s3bucket/$FTP_SUBFOLER_NAME" >> /etc/vsftpd.conf
 # fi
 
+# this option using for vsftpd only
 if [ ! -z "$FTP_DENIED_PERMISSION" ]; then
-  echo "cmds_denied=$FTP_DENIED_PERMISSION" >> /etc/vsftpd.conf
+  cat /etc/vsftpd.conf | grep "cmds_denied=$FTP_DENIED_PERMISSION" > /dev/null
+  if [ "$?" != "0" ]; then
+    echo "cmds_denied=$FTP_DENIED_PERMISSION" >> /etc/vsftpd.conf
+  fi
 fi
 
+# modify unmask by env
 if [ ! -z "$FTP_LOCAL_MASH" ]; then
   CHMOD_MASK=$((777 - $(echo $FTP_LOCAL_MASH | sed 's/^0*//')))
-  echo "local_umask=$FTP_LOCAL_MASH" >> /etc/vsftpd.conf
-  echo "file_open_mode=$CHMOD_MASK" >> /etc/vsftpd.conf
-  echo "chown_upload_mode=$CHMOD_MASK" >> /etc/vsftpd.conf
+  cat /etc/vsftpd.conf | grep "chown_upload_mode=$CHMOD_MASK" > /dev/null
+  if [ "$?" != "0" ]; then
+    echo "local_umask=$FTP_LOCAL_MASH" >> /etc/vsftpd.conf
+    echo "file_open_mode=$CHMOD_MASK" >> /etc/vsftpd.conf
+    echo "chown_upload_mode=$CHMOD_MASK" >> /etc/vsftpd.conf
+  fi
+else
+  cat /etc/vsftpd.conf | grep "local_umask=022" > /dev/null
+  if [ "$?" != "0" ]; then
+    echo "local_umask=022" >> /etc/vsftpd.conf
+  fi
+fi
 
+# set sftp mode to allow: read, upload, read & write
+if [ "$SFTP_MODE" == 'r' ]; then
+  # read only
+  cat /etc/ssh/sshd_config | grep "Match Group ftpaccess" > /dev/null
+  if [ "$?" != "0" ]; then
+cat <<EOT >> /etc/ssh/sshd_config
+Match Group ftpaccess
+#   PasswordAuthentication yes
+    PasswordAuthentication no
+    ChrootDirectory %h
+    X11Forwarding no
+    AllowTcpForwarding no
+    PermitTunnel no
+    AllowAgentForwarding no
+    ForceCommand internal-sftp -R
+EOT
+elif [ "$SFTP_MODE" == 'u' ]; then
+  #upload only
+  cat /etc/ssh/sshd_config | grep "Match Group ftpaccess" > /dev/null
+  if [ "$?" != "0" ]; then
 cat <<EOT >> /etc/ssh/sshd_config
 Match Group ftpaccess
 #   PasswordAuthentication yes
@@ -29,9 +63,10 @@ Match Group ftpaccess
     AllowAgentForwarding no
     ForceCommand internal-sftp -u 0222 -P rename,remove,rmdir,setstat,fsetstat
 EOT
-  service ssh restart
 else
-
+  # normal rw
+  cat /etc/ssh/sshd_config | grep "Match Group ftpaccess" > /dev/null
+  if [ "$?" != "0" ]; then
 cat <<EOT >> /etc/ssh/sshd_config
 Match Group ftpaccess
 #   PasswordAuthentication yes
@@ -41,17 +76,25 @@ Match Group ftpaccess
     AllowTcpForwarding no
     ForceCommand internal-sftp
 EOT
-  echo "local_umask=022" >> /etc/vsftpd.conf
 fi
+service ssh restart
 
+# disabled chmod on vsftp
 if [ ! -z "$FTP_DISABLED_CHMOD" ]; then
-  echo "chmod_enable=NO" >> /etc/vsftpd.conf
+  cat /etc/vsftpd.conf | grep "chmod_enable=NO" > /dev/null
+  if [ "$?" != "0" ]; then
+    echo "chmod_enable=NO" >> /etc/vsftpd.conf
+  fi
 fi
 
+# set a custom path default for ftp
+$PATH_ROOT=/home/aws/s3bucket/ftp-users
 if [ ! -z $ROOT_FOLDER ]; then
-  echo "secure_chroot_dir=$ROOT_FOLDER" >> /etc/vsftpd.conf
-else
-  echo "secure_chroot_dir=/home/aws/s3bucket/ftp-users" >> /etc/vsftpd.conf
+  PATH_ROOT=$ROOT_FOLDER
+fi
+cat /etc/vsftpd.conf | grep "secure_chroot_dir=$ROOT_FOLDER"
+if [ "$?" != "0" ]; then
+  echo "secure_chroot_dir=$PATH_ROOT" >> /etc/vsftpd.conf
 fi
 
 # Check first if the required FTP_BUCKET variable was provided, if not, abort.
