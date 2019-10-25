@@ -2,7 +2,7 @@
 
 FTP_SUBFOLER_NAME=${FTP_SUBFOLER:-"ftp-users"}
 IAM_ROLE=${IAM_ROLE:-"auto"}
-
+AWS_REGION=${AWS_REGION:-"ap-southeast-1"}
 # create a link folder if the link is change
 # if [ "$FTP_SUBFOLER_NAME" != "ftp-users" ]; then
 #   echo "secure_chroot_dir=/home/aws/s3bucket/$FTP_SUBFOLER_NAME" >> /etc/vsftpd.conf
@@ -155,10 +155,10 @@ fi
 # start s3 fuse
 # Code above is not needed if the IAM role is attaced to EC2 instance 
 # s3fs provides the iam_role option to grab those credentials automatically
-/usr/local/bin/s3fs $FTP_BUCKET /home/aws/s3bucket -o allow_other -o mp_umask="0022" -o iam_role="$IAM_ROLE" #-d -d -f -o f2 -o curldbg
+/usr/local/bin/s3fs $FTP_BUCKET /home/aws/s3bucket -o allow_other -o mp_umask="0022" -o iam_role="$IAM_ROLE" -o url=https://s3-$AWS_REGION.amazonaws.com #-d -d -f -o f2 -o curldbg
 /usr/local/users.sh
 FTPGROUPID=`getent group ftpaccess | awk -F: '{printf "%d\n", $3}'`
 umount -l /home/aws/s3bucket
 
 #remount s3 folder to assign permission for the ftpaccess group 
-/usr/local/bin/s3fs $FTP_BUCKET /home/aws/s3bucket -o allow_other,gid=$FTPGROUPID,use_rrs=1 -o mp_umask="0022" -o iam_role="$IAM_ROLE"
+/usr/local/bin/s3fs $FTP_BUCKET /home/aws/s3bucket -o allow_other,gid=$FTPGROUPID,use_rrs=1 -o mp_umask="0022" -o iam_role="$IAM_ROLE" -o url=https://s3-$AWS_REGION.amazonaws.com
