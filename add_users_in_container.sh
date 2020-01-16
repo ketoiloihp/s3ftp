@@ -1,8 +1,8 @@
 #!/bin/bash
 # This script will update the env.list file (file containing USERS environrment variable) and add the new users if there are any.
 # Will check for new users at a given time interval (change sleep duration on line 33)
-FTP_USER_SUBFOLERS=${USER_SUBFOLERS:-"files"}
-FTP_USER_SUBFOLERS_RW=${USER_SUBFOLERS_RW:-""}
+FTP_USER_SUBFOLERS=$(echo ${USER_SUBFOLERS:-"files"}| tr ";" "\n")
+FTP_USER_SUBFOLERS_RW=$(echo ${USER_SUBFOLERS_RW:-""}| tr ";" "\n")
 FTP_USER_SUBFOLERS_RW=${USER_SUBFOLERS_RW:-$FTP_USER_SUBFOLERS}
 FTP_USER_SUBFOLERS_R=${USER_SUBFOLERS_R:-""}
 FTP_SUBFOLER_NAME=${FTP_SUBFOLER:-"ftp-users"}
